@@ -302,7 +302,7 @@
   }, { passive: false });
 
   document.addEventListener('click', event => {
-    if (event.target.id === 'lightbox' || event.target.id === 'lightbox-close') {
+    if (event.target.id === 'lightbox' || event.target.id === 'lightbox-close' || (event.target.id === 'lightbox-body' && !lbDragged)) {
       closeLightbox();
       return;
     }
