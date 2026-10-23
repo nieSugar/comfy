@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="面向 ComfyUI Desktop 新手的中文图解课堂。跟着步骤从 Hugging Face 下载模型、认识节点、生成第一张图、理解参数与排查问题。">
+  <meta name="color-scheme" content="light">
+  <title>Comfy 课堂 · 把想法连成画面</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23b9eb56'/%3E%3Cpath d='M23 19h18v10H23zm0 16h18v10H23zM32 29v6' fill='none' stroke='%23263229' stroke-width='4'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="lessons.js" defer></script>
+  <script src="diagrams.js" defer></script>
+  <script src="nodes.js" defer></script>
+  <script src="quizzes.js" defer></script>
+  <script src="media.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#lesson" data-scroll="lesson">跳到课程内容</a>
+  <aside class="sidebar" id="sidebar" aria-label="课程目录">
+    <a class="brand" href="#orientation" aria-label="Comfy 课堂首页"><span class="brand-mark" aria-hidden="true">c<span>↗</span></span><span>comfy<span class="brand-cn">课堂</span></span></a>
+    <div class="course-edition">DESKTOP LEARNING GUIDE <span>02</span></div>
+    <p class="sidebar-caption">从零开始，慢慢玩明白。</p>
+    <div class="nav-heading"><span>你的学习路线</span><span id="lesson-count">14 课</span></div>
+    <nav id="course-nav" aria-label="章节"></nav>
+    <div class="sidebar-bottom">
+      <span class="eyebrow">一点点，变得熟练</span>
+      <div class="progress-label"><strong id="progress-text">0 / 14 课</strong><span id="progress-percent">0%</span></div>
+      <progress id="course-progress" value="0" max="14" aria-label="课程完成进度"></progress>
+      <p>进度只保存在这个浏览器里</p>
+    </div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar">
+      <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar">☰ 目录</button>
+      <div class="breadcrumb"><span>学习空间</span><span aria-hidden="true">/</span><strong id="breadcrumb-current">入门指南</strong></div>
+      <a class="reference-link" href="#node-manual" data-scroll="node-manual">节点说明书 <span aria-hidden="true">↓</span></a>
+      <a class="reference-link" href="https://docs.comfy.org/" target="_blank" rel="noopener noreferrer">官方文档 <span aria-hidden="true">↗</span></a>
+      <span class="local-badge"><i aria-hidden="true"></i>本地 · 离线可学</span>
+    </header>
+    <main id="lesson" tabindex="-1"></main>
+    <footer class="site-footer"><span>Comfy 课堂 · 独立中文教学项目，非官方产品</span><span>资料与实机核对：2026.10.23 · ComfyUI v0.42.4 实机验收</span></footer>
+  </div>
+  <div class="toast" id="status" role="status" aria-live="polite"></div>
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="放大查看步骤截图" hidden>
+    <div class="lightbox-card">
+      <div class="lightbox-bar"><strong id="lightbox-caption"></strong><button type="button" class="button dark" id="lightbox-close">× 关闭大图 (Esc)</button></div>
+      <div class="lightbox-body"><img id="lightbox-img" src="assets/screenshots/ui-canvas-overview.png" alt="步骤放大图"></div>
+    </div>
+  </div>
+  <noscript><p class="noscript">请启用 JavaScript 以使用互动课堂。工作流说明也可直接阅读 workflows/README.md。</p></noscript>
+</body>
+</html>
