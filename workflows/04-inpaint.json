@@ -1,0 +1,206 @@
+{
+  "last_node_id": 11,
+  "last_link_id": 17,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "CheckpointLoaderSimple",
+      "title": "① 选择 SD1.5 模型 / Load Checkpoint",
+      "pos": [40, 120],
+      "size": [330, 110],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "MODEL", "type": "MODEL", "links": [1], "slot_index": 0 },
+        { "name": "CLIP", "type": "CLIP", "links": [2, 3], "slot_index": 1 },
+        { "name": "VAE", "type": "VAE", "links": [8, 12], "slot_index": 2 }
+      ],
+      "properties": { "Node name for S&R": "CheckpointLoaderSimple" },
+      "widgets_values": ["SELECT_YOUR_SD15_CHECKPOINT.safetensors"]
+    },
+    {
+      "id": 2,
+      "type": "CLIPTextEncode",
+      "title": "② 描述局部修改目标 / Positive Prompt",
+      "pos": [420, 60],
+      "size": [360, 160],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [{ "name": "clip", "type": "CLIP", "link": 2 }],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [4], "slot_index": 0 }],
+      "properties": { "Node name for S&R": "CLIPTextEncode" },
+      "widgets_values": ["a small blue ceramic teapot on a wooden table, soft window light, product photography, simple background"]
+    },
+    {
+      "id": 3,
+      "type": "CLIPTextEncode",
+      "title": "③ 尽量避免什么 / Negative Prompt",
+      "pos": [420, 270],
+      "size": [360, 140],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [{ "name": "clip", "type": "CLIP", "link": 3 }],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [5], "slot_index": 0 }],
+      "properties": { "Node name for S&R": "CLIPTextEncode" },
+      "widgets_values": ["blurry, watermark, text"]
+    },
+    {
+      "id": 8,
+      "type": "LoadImage",
+      "title": "④ 上传 512 方图并画遮罩 / Load Image",
+      "pos": [40, 360],
+      "size": [330, 320],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [10, 14], "slot_index": 0 },
+        { "name": "MASK", "type": "MASK", "links": [11, 13, 15], "slot_index": 1 }
+      ],
+      "properties": { "Node name for S&R": "LoadImage" },
+      "widgets_values": ["SELECT_YOUR_INPUT_IMAGE.png", "image"]
+    },
+    {
+      "id": 9,
+      "type": "MaskToImage",
+      "title": "⑤ 遮罩转图像 / Convert Mask to Image",
+      "pos": [420, 660],
+      "size": [260, 60],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [{ "name": "mask", "type": "MASK", "link": 13 }],
+      "outputs": [{ "name": "IMAGE", "type": "IMAGE", "links": [16], "slot_index": 0 }],
+      "properties": { "Node name for S&R": "MaskToImage" },
+      "widgets_values": []
+    },
+    {
+      "id": 10,
+      "type": "PreviewImage",
+      "title": "⑥ 检查白(重绘)黑(保留) / Preview Mask",
+      "pos": [730, 620],
+      "size": [260, 260],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [{ "name": "images", "type": "IMAGE", "link": 16 }],
+      "outputs": [],
+      "properties": { "Node name for S&R": "PreviewImage" },
+      "widgets_values": []
+    },
+    {
+      "id": 4,
+      "type": "VAEEncodeForInpaint",
+      "title": "⑦ 局部重绘编码 / VAE Encode (for Inpainting)",
+      "pos": [420, 470],
+      "size": [340, 130],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        { "name": "pixels", "type": "IMAGE", "link": 10 },
+        { "name": "vae", "type": "VAE", "link": 12 },
+        { "name": "mask", "type": "MASK", "link": 11 }
+      ],
+      "outputs": [{ "name": "LATENT", "type": "LATENT", "links": [6], "slot_index": 0 }],
+      "properties": { "Node name for S&R": "VAEEncodeForInpaint" },
+      "widgets_values": [6]
+    },
+    {
+      "id": 5,
+      "type": "KSampler",
+      "title": "⑧ 局部重绘采样 / KSampler",
+      "pos": [840, 120],
+      "size": [320, 280],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL", "link": 1 },
+        { "name": "positive", "type": "CONDITIONING", "link": 4 },
+        { "name": "negative", "type": "CONDITIONING", "link": 5 },
+        { "name": "latent_image", "type": "LATENT", "link": 6 }
+      ],
+      "outputs": [{ "name": "LATENT", "type": "LATENT", "links": [7], "slot_index": 0 }],
+      "properties": { "Node name for S&R": "KSampler" },
+      "widgets_values": [42, "fixed", 20, 7, "euler", "normal", 1]
+    },
+    {
+      "id": 6,
+      "type": "VAEDecode",
+      "title": "⑨ 解码新画面 / VAE Decode",
+      "pos": [1210, 120],
+      "size": [240, 85],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        { "name": "samples", "type": "LATENT", "link": 7 },
+        { "name": "vae", "type": "VAE", "link": 8 }
+      ],
+      "outputs": [{ "name": "IMAGE", "type": "IMAGE", "links": [9], "slot_index": 0 }],
+      "properties": { "Node name for S&R": "VAEDecode" },
+      "widgets_values": []
+    },
+    {
+      "id": 11,
+      "type": "ImageCompositeMasked",
+      "title": "⑩ 遮罩像素合成(保背景) / Image Composite Masked",
+      "pos": [1210, 280],
+      "size": [320, 170],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        { "name": "destination", "type": "IMAGE", "link": 14 },
+        { "name": "source", "type": "IMAGE", "link": 9 },
+        { "name": "mask", "type": "MASK", "link": 15 }
+      ],
+      "outputs": [{ "name": "IMAGE", "type": "IMAGE", "links": [17], "slot_index": 0 }],
+      "properties": { "Node name for S&R": "ImageCompositeMasked" },
+      "widgets_values": [0, 0, false]
+    },
+    {
+      "id": 7,
+      "type": "SaveImage",
+      "title": "⑪ 预览并保存合成结果 / Save Image",
+      "pos": [1580, 120],
+      "size": [330, 360],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [{ "name": "images", "type": "IMAGE", "link": 17 }],
+      "outputs": [],
+      "properties": { "Node name for S&R": "SaveImage" },
+      "widgets_values": ["ComfyClass/inpaint"]
+    }
+  ],
+  "links": [
+    [1, 1, 0, 5, 0, "MODEL"],
+    [2, 1, 1, 2, 0, "CLIP"],
+    [3, 1, 1, 3, 0, "CLIP"],
+    [4, 2, 0, 5, 1, "CONDITIONING"],
+    [5, 3, 0, 5, 2, "CONDITIONING"],
+    [6, 4, 0, 5, 3, "LATENT"],
+    [7, 5, 0, 6, 0, "LATENT"],
+    [8, 1, 2, 6, 1, "VAE"],
+    [9, 6, 0, 11, 1, "IMAGE"],
+    [10, 8, 0, 4, 0, "IMAGE"],
+    [11, 8, 1, 4, 2, "MASK"],
+    [12, 1, 2, 4, 1, "VAE"],
+    [13, 8, 1, 9, 0, "MASK"],
+    [14, 8, 0, 11, 0, "IMAGE"],
+    [15, 8, 1, 11, 2, "MASK"],
+    [16, 9, 0, 10, 0, "IMAGE"],
+    [17, 11, 0, 7, 0, "IMAGE"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": { "ds": { "scale": 0.58, "offset": [30, 50] } },
+  "version": 0.4
+}
