@@ -264,15 +264,22 @@ input[type="range"] { width: 100%; accent-color: #608437; }
 .minimap-track li.active span { background: #232b28; color: #fff; }
 .step-shot { margin: 16px 0; border: 1px solid #d5ddd0; border-radius: 11px; overflow: hidden; background: #1a1f1c; }
 .shot-zoom-trigger { position: relative; display: block; width: 100%; border: 0; padding: 0; background: #141816; cursor: zoom-in; }
-.step-shot img { display: block; width: 100%; height: auto; max-height: 460px; object-fit: contain; background: #141816; }
-.zoom-badge { position: absolute; right: 10px; bottom: 10px; background: rgba(20, 24, 22, 0.85); color: #edf5df; border: 1px solid #6b8848; border-radius: 6px; padding: 3px 9px; font-size: 11px; pointer-events: none; }
+.step-shot img { display: block; width: 100%; height: auto; max-height: 540px; object-fit: contain; background: #141816; }
+.zoom-badge { position: absolute; right: 10px; bottom: 10px; background: rgba(20, 24, 22, 0.88); color: #edf5df; border: 1px solid #7ea341; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 600; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,.35); }
 .step-shot figcaption { padding: 9px 13px; font-size: 11px; color: #475342; background: #f7f9f4; border-top: 1px solid var(--line); }
-.lightbox { position: fixed; inset: 0; z-index: 120; background: rgba(15, 20, 17, 0.86); display: grid; place-items: center; padding: 20px; }
+.lightbox { position: fixed; inset: 0; z-index: 120; background: rgba(12, 16, 14, 0.92); display: grid; place-items: center; padding: 8px; }
 .lightbox[hidden] { display: none; }
-.lightbox-card { background: #161b18; border: 1px solid #415239; border-radius: 14px; max-width: min(1460px, 96vw); max-height: 92vh; width: 100%; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.55); }
-.lightbox-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 18px; background: #202823; color: #eef3ea; font-size: 13px; border-bottom: 1px solid #33402e; }
-.lightbox-body { overflow: auto; display: grid; place-items: center; background: #0f1311; padding: 10px; }
-.lightbox-body img { display: block; max-width: 100%; max-height: calc(92vh - 76px); width: auto; height: auto; object-fit: contain; }
+.lightbox-card { background: #141916; border: 1px solid #45593b; border-radius: 12px; width: 98vw; height: 96vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 24px 70px rgba(0,0,0,.65); }
+.lightbox-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 14px; background: #1e2621; color: #eef3ea; font-size: 12px; border-bottom: 1px solid #33402e; flex-shrink: 0; }
+.lightbox-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.lb-zoom-btn { background: #2a342d; color: #e2ecd9; border: 1px solid #44563d; min-height: 30px; padding: 4px 10px; font-size: 11px; border-radius: 6px; }
+.lb-zoom-btn:hover { background: #36443a; }
+.lb-zoom-btn[aria-pressed="true"] { background: #b9eb56; color: #1b2418; border-color: #b9eb56; font-weight: 700; }
+.lightbox-body { flex: 1; overflow: auto; background: #0d100e; position: relative; display: flex; padding: 12px; user-select: none; }
+.lightbox-body img { display: block; flex: 0 0 auto; max-width: none; max-height: none; height: auto; margin: auto; cursor: zoom-in; border-radius: 6px; box-shadow: 0 8px 32px rgba(0,0,0,.5); }
+.lightbox-body.zoomed-max img { cursor: zoom-out; }
+.lightbox-body.dragging, .lightbox-body.dragging img { cursor: grabbing !important; }
+.lightbox-hint { padding: 6px 14px; background: #19211c; color: #b7c8aa; font-size: 11px; text-align: center; border-top: 1px solid #2c3829; flex-shrink: 0; }
 .lab-visual-matrix { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
 .lab-swatch { background: #fff; border: 1px solid #d5e0c6; border-radius: 8px; overflow: hidden; text-align: center; }
 .lab-swatch span { display: block; font-size: 10px; font-weight: 600; color: var(--forest); padding: 5px 4px; background: #f7faf2; border-bottom: 1px solid #e5ece0; overflow-wrap: anywhere; }

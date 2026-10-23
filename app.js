@@ -158,7 +158,7 @@
     const stepNodes = (stepMedia?.nodes || []).map(id => nodeMap.get(id)).filter(Boolean);
     renderStepNav();
     const minimapHTML = stepMedia && trackStages.length ? `<div class="step-minimap" aria-label="当前步骤在整体流程中的位置"><div class="minimap-head"><span class="minimap-tag">流程位置小地图</span><strong>${escape(stepMedia.where)}</strong></div><ol class="minimap-track">${trackStages.map((stage, idx) => `<li class="${idx === stepMedia.active ? 'active' : idx < stepMedia.active ? 'done' : ''}"><span>${idx + 1}</span>${escape(stage)}</li>`).join('')}</ol></div>` : '';
-    const shotHTML = stepMedia?.shot ? `<figure class="step-shot"><button type="button" class="shot-zoom-trigger" data-zoom-src="${escape(stepMedia.shot)}" data-zoom-caption="${escape(stepMedia.caption)}" aria-label="点击放大查看本步截图"><img src="${escape(stepMedia.shot)}" alt="${escape(stepMedia.caption)}" loading="lazy"><span class="zoom-badge">🔍 点击放大看红框细节</span></button><figcaption>${escape(stepMedia.caption)}</figcaption></figure>` : '';
+    const shotHTML = stepMedia?.shot ? `<figure class="step-shot"><button type="button" class="shot-zoom-trigger" data-zoom-src="${escape(stepMedia.shot)}" data-zoom-caption="${escape(stepMedia.caption)}" aria-label="点击放大查看本步截图"><img src="${escape(stepMedia.shot)}" alt="${escape(stepMedia.caption)}" loading="lazy"><span class="zoom-badge">🔍 点击放大看红框细节（支持多级放大）</span></button><figcaption>${escape(stepMedia.caption)}</figcaption></figure>` : '';
     const nodesHTML = stepNodes.length ? `<div class="step-nodes-drawer"><div class="step-nodes-title">本步操作的节点与参数速查（知道每个旋钮是干嘛的）：</div>${stepNodes.map(node => `<details class="inline-node-card"><summary><strong>${escape(node.zh)}</strong><code>${escape(node.en)}</code><span>— ${escape(node.oneLine)}</span></summary><div class="inline-node-body"><p>${escape(node.analogy)}</p>${node.widgets.length ? `<ul class="inline-widget-list">${node.widgets.map(w => `<li><b>${escape(w.zh)}（${escape(w.name)}）：</b>${escape(w.what)}${w.course ? ` <em>【本课设置：${escape(w.course)}】</em>` : ''}</li>`).join('')}</ul>` : '<p class="muted-note">无手动参数控件，按步骤连接输入/输出端口即可。</p>'}<button type="button" class="button subtle jump-manual" data-open-node="${escape(node.id)}">查看完整端口与调大/调小对比 ↓</button></div></details>`).join('')}</div>` : '';
     document.getElementById('step-card').innerHTML = `<span class="eyebrow">STEP ${String(currentStep + 1).padStart(2, '0')} / ${String(currentLesson.steps.length).padStart(2, '0')}</span><h3 id="step-title" tabindex="-1">${escape(step.title)}</h3>${minimapHTML}<p class="step-action">${escape(step.action)}</p>${step.links?.length ? `<div class="step-links">${step.links.map(link => `<a class="button" href="${escape(link.url)}" target="_blank" rel="noopener noreferrer">${escape(link.title)} ↗</a>`).join('')}</div>` : ''}${shotHTML}<div class="step-explanation"><div><strong>为什么要这样做？</strong><p>${escape(step.why)}</p></div><div><strong>做对了，会看到什么？</strong><p>${escape(step.expected)}</p></div></div>${nodesHTML}${step.tip ? `<div class="teacher-tip"><strong>老师提醒</strong>${escape(step.tip)}</div>` : ''}<label class="step-check"><input type="checkbox" id="step-done" ${state.steps[currentLesson.id].includes(currentStep) ? 'checked' : ''}>这一步，我已经实际操作完成了</label><div class="step-buttons"><button class="button" type="button" data-move="-1" ${currentStep === 0 ? 'disabled' : ''}>← 上一步</button><span>${currentStep + 1} / ${currentLesson.steps.length}</span><button class="button primary" type="button" data-move="1" ${currentStep === currentLesson.steps.length - 1 ? 'disabled' : ''}>下一步 →</button></div>`;
   }
@@ -223,24 +223,114 @@
     document.getElementById('sidebar').inert = matchMedia('(max-width: 720px)').matches && !document.body.classList.contains('menu-open');
   }
 
+  let lbZoom = 1.6;
+  let lbDrag = null;
+  let lbDragged = false;
+
+  function setLightboxZoom(nextZoom, focusPoint) {
+    const body = document.getElementById('lightbox-body');
+    const img = document.getElementById('lightbox-img');
+    const hint = document.getElementById('lightbox-hint');
+    if (!body || !img) return;
+    lbZoom = Math.min(4, Math.max(1, Math.round(nextZoom * 10) / 10));
+    const availW = Math.max(320, body.clientWidth - 24);
+    const availH = Math.max(240, body.clientHeight - 24);
+    const fitW = Math.min(availW, Math.round(availH * 1.6));
+    const targetW = lbZoom === 1 ? fitW : Math.round(Math.max(availW * 0.96, fitW) * lbZoom);
+    const oldRect = img.getBoundingClientRect();
+    const bodyRect = body.getBoundingClientRect();
+    const refX = focusPoint ? focusPoint.clientX : (bodyRect.left + bodyRect.width / 2);
+    const refY = focusPoint ? focusPoint.clientY : (bodyRect.top + bodyRect.height / 2);
+    const relX = oldRect.width > 0 ? Math.min(1, Math.max(0, (refX - oldRect.left) / oldRect.width)) : 0.5;
+    const relY = oldRect.height > 0 ? Math.min(1, Math.max(0, (refY - oldRect.top) / oldRect.height)) : 0.5;
+    img.style.width = `${targetW}px`;
+    body.classList.toggle('zoomed-max', lbZoom >= 3.4);
+    document.querySelectorAll('[data-lb-zoom]').forEach(btn => {
+      const val = Number(btn.dataset.lbZoom);
+      if (!Number.isNaN(val)) btn.setAttribute('aria-pressed', String(Math.abs(val - lbZoom) < 0.08));
+    });
+    if (hint) {
+      hint.textContent = `🔍 当前缩放：${Math.round(lbZoom * 100)}% · 直接点击图片任意位置可定点放大（160% → 240% → 340% → 100%）· 按住鼠标可拖拽平移`;
+    }
+    const newRect = img.getBoundingClientRect();
+    const targetClientX = focusPoint ? focusPoint.clientX : (bodyRect.left + bodyRect.width / 2);
+    const targetClientY = focusPoint ? focusPoint.clientY : (bodyRect.top + bodyRect.height / 2);
+    body.scrollLeft += (newRect.left + relX * newRect.width) - targetClientX;
+    body.scrollTop += (newRect.top + relY * newRect.height) - targetClientY;
+  }
+
   function closeLightbox() {
     const lb = document.getElementById('lightbox');
     if (lb) lb.hidden = true;
+    lbDrag = null;
   }
+
+  document.addEventListener('mousedown', event => {
+    const body = document.getElementById('lightbox-body');
+    if (!body || event.button !== 0 || !event.target.closest('#lightbox-body')) return;
+    lbDrag = { x: event.clientX, y: event.clientY, left: body.scrollLeft, top: body.scrollTop };
+    lbDragged = false;
+  });
+
+  document.addEventListener('mousemove', event => {
+    if (!lbDrag) return;
+    const body = document.getElementById('lightbox-body');
+    const dx = event.clientX - lbDrag.x;
+    const dy = event.clientY - lbDrag.y;
+    if (Math.hypot(dx, dy) > 5) {
+      lbDragged = true;
+      body.classList.add('dragging');
+      body.scrollLeft = lbDrag.left - dx;
+      body.scrollTop = lbDrag.top - dy;
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    const body = document.getElementById('lightbox-body');
+    if (body) body.classList.remove('dragging');
+    lbDrag = null;
+  });
+
+  document.addEventListener('wheel', event => {
+    const lb = document.getElementById('lightbox');
+    if (!lb || lb.hidden || !event.target.closest('#lightbox-body')) return;
+    if (event.ctrlKey || event.metaKey || Math.abs(event.deltaY) > 0) {
+      event.preventDefault();
+      const step = event.deltaY < 0 ? 0.4 : -0.4;
+      setLightboxZoom(lbZoom + step, { clientX: event.clientX, clientY: event.clientY });
+    }
+  }, { passive: false });
 
   document.addEventListener('click', event => {
     if (event.target.id === 'lightbox' || event.target.id === 'lightbox-close') {
       closeLightbox();
       return;
     }
+    if (event.target.id === 'lightbox-img') {
+      if (lbDragged) {
+        lbDragged = false;
+        return;
+      }
+      const next = lbZoom < 1.5 ? 1.6 : lbZoom < 2.2 ? 2.4 : lbZoom < 3.2 ? 3.4 : 1;
+      setLightboxZoom(next, { clientX: event.clientX, clientY: event.clientY });
+      return;
+    }
     const button = event.target.closest('button, a');
     if (!button) return;
+    if (button.dataset.lbZoom) {
+      const action = button.dataset.lbZoom;
+      const next = action === 'in' ? lbZoom + 0.6 : action === 'out' ? lbZoom - 0.6 : Number(action);
+      setLightboxZoom(next);
+      return;
+    }
     if (button.dataset.zoomSrc) {
       const lb = document.getElementById('lightbox');
-      document.getElementById('lightbox-img').src = button.dataset.zoomSrc;
-      document.getElementById('lightbox-img').alt = button.dataset.zoomCaption || '';
+      const img = document.getElementById('lightbox-img');
+      img.src = button.dataset.zoomSrc;
+      img.alt = button.dataset.zoomCaption || '';
       document.getElementById('lightbox-caption').textContent = button.dataset.zoomCaption || '';
       lb.hidden = false;
+      setLightboxZoom(1.6);
       document.getElementById('lightbox-close').focus();
       return;
     }

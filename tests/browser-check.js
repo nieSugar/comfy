@@ -76,6 +76,12 @@ async (page) => {
     assert(await tab.locator('.node-manual-item').count() === 26, 'All 26 node manual cards rendered');
     await tab.locator('.shot-zoom-trigger').click();
     assert(!(await tab.locator('#lightbox').evaluate(el => el.hidden)), 'Clicking step screenshot opens lightbox zoom');
+    const w160 = await tab.locator('#lightbox-img').evaluate(el => el.getBoundingClientRect().width);
+    await tab.locator('#lightbox-img').click({ position: { x: 200, y: 150 } });
+    const w240 = await tab.locator('#lightbox-img').evaluate(el => el.getBoundingClientRect().width);
+    await tab.locator('#lightbox-img').click({ position: { x: 200, y: 150 } });
+    const w340 = await tab.locator('#lightbox-img').evaluate(el => el.getBoundingClientRect().width);
+    assert(w160 > 1800 && w240 > w160 * 1.3 && w340 > w240 * 1.3, `Clicking lightbox image zooms progressively (${Math.round(w160)}px -> ${Math.round(w240)}px -> ${Math.round(w340)}px)`);
     await tab.keyboard.press('Escape');
     assert(await tab.locator('#lightbox').evaluate(el => el.hidden), 'Pressing Escape closes lightbox zoom');
 
