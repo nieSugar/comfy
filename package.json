@@ -1,0 +1,11 @@
+{
+  "name": "comfy-desktop-classroom",
+  "version": "1.0.0",
+  "private": true,
+  "description": "零依赖、可离线打开的 ComfyUI Desktop 中文图解课堂",
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "check": "node --check app.js && node --check diagrams.js && node --check lessons.js && node --check nodes.js && node --check quizzes.js && node --check media.js && node --test tests/*.test.cjs"
+  }
+}
